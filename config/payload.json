@@ -1,15 +1,15 @@
 {
     "selCourseParams": {
-        "username": "",
-        "password": "",
+        "username": "19307710217",
+        "password": "Yikun=666!Fd",
         "session_locale": "zh_CN"
     },
     "formData": {
-        "lessonNo": "" ,
+        "lessonNo": "COMP130172.01" ,
         "courseCode": "",
         "courseName": ""
     },
     "mainPageData": {
-        "electionProfile.id": 1904
+        "electionProfile.id": 2224
     }
 }

@@ -64,10 +64,8 @@ def ReadAccountJson():
 
 def ReadLessonJson():
     json_data = ReadJson('./config/lesson.json')
-    lessonList = json_data['LessonID']
-    if(len(lessonList) == 0):
-        raise Exception('请在 data/lesson.json 中输入想要选择的课程ID')
-    return lessonList
+    lessonID = json_data['LessonID']
+    return lessonID
 
 def ServiceGetter(service_field):
     json_data = ReadJson('./config/service.json')

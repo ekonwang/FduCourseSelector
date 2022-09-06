@@ -2,6 +2,8 @@
 import json
 import re
 import base64
+import time
+import datetime
 from cookie_getter import CookieGetter
 from captcha import read_captcha
 from email_sender import sendEmail
@@ -12,33 +14,42 @@ _, URL_DICT = ReadNetWorkJson()
 class CourseSearcher(CookieGetter):
     def __init__(self):
         super(CourseSearcher, self).__init__()
+        now_timestamp = str(int(time.time()))
+
         self.mainUrl = URL_DICT['MAIN_PAGE']
-        self.xkPageUrl = URL_DICT['XK_PAGE']
+        self.xkPageUrl = URL_DICT['NT_XK_PAGE'] + now_timestamp
         self.baseUrl = URL_DICT['BASE_URL']
         self.selCourseUrl = URL_DICT['SELECT_COURSE']
         self.captchaUrl = URL_DICT['CAPTCHA']
+        self.NTslideUrl = URL_DICT['NT_SLIDE_QUERY']
         
         self.form_data = PayloadGetter('formData')
         self.main_page_data = PayloadGetter('mainPageData')
-        self.courseIdList = ReadLessonJson()
+        self.lessonNO = ReadLessonJson()
         self.cookies = self.getCookies()
+        self.have_post_try = False
+
+        course_no, course_id, course_name = findClassList(res.text, lessonNo)
+        self.course_id = course_id
+        self.course_no = course_no
+        self.course_name = course_name
         
     def RunScript(self):
-        for lessonNo in self.courseIdList:
-            self.addCourse(lessonNo)
+        result = False
+        while result == False:
+            result = self.addCourse()
         
-    def addCourse(self, lessonNo):
-        res = self.searchCourse(lessonNo)
-        course_no, course_id, course_name = findClassList(res.text, lessonNo)
-        if isCourseAvailable(res.text, course_no):
-            info = "课程 [" + course_name + " " + course_id +"], 可选, 正在选课中"
-            print(info)
+    def addCourse(self):
+        res = self.searchCourse(self.lessonNO)
+        if isCourseAvailable(res.text, self.course_no):
+            info = "课程 [" + self.course_name + " " + self.course_id +"], 可选, 正在选课中"
+            self.printK(info)
             #sendEmail(info)
             result = self.selCourse(course_no)
             return result
         else:
-            info = "课程 [" + course_name + " " + course_id +"], 目前不可选"
-            print(info)
+            info = "课程 [" + self.course_name + " " + self.course_id +"], 目前不可选"
+            self.printK(info)
             return False
         
     def searchCourse(self, lessonNo):
@@ -81,9 +92,15 @@ class CourseSearcher(CookieGetter):
             data=form_data,
             ErrMsg="selCourse Error (selCourse)"
         )
-        #print(response.content.decode(encoding='utf-8'))
-        print("选课成功")
-        
+        raw_str = response.content
+        res = re.findall(r"成功", raw_str)
+        if len(res):
+            self.printK('{} 选课成功。'.format(self.LessonID))
+            return True
+        else:
+            return False
+        # print(response.content.decode(encoding='utf-8'))
+  
     def getCaptcha(self):
         response = self.Get(
             url=self.captchaUrl,
@@ -92,6 +109,9 @@ class CourseSearcher(CookieGetter):
         )
         captcha =  read_captcha(response.content)
         return captcha
+    
+    def printK(self, info):
+        print('[{}] {}'.format(datetime.datetime(), info))
     
 
 if __name__ == "__main__":

@@ -24,3 +24,10 @@ def read_captcha(img_byte):
                                 free_list=free_list[0],
                                 detail = 0)
         return result[0]
+
+def solve_slide(drag_byte, background_byte):
+        drag = Image.open(io.BytesIO(drag_byte)).convert('L')
+        background = Image.open(io.BytesIO(background_byte)).convert('L')
+
+        print(type(drag))
+        print(type(background))
